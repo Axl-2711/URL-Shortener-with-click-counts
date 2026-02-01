@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener</title>
+    <link rel="stylesheet" href="/styles/home.css">
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="top-bar">
+            <span>Logged in as <span class="guest-user">
+                    <%= loggedInUserName %>
+                </span></span>
+            <form method="POST" action="/user/logout">
+                <button type="submit" class="logout-btn">Logout</button>
+            </form>
+        </div>
+
+        <h1>URL Shortener</h1>
+
+        <form method="POST" action="/url">
+            <label for="url">Enter Your Long URL:</label>
+            <input type="url" name="url" id="url" placeholder="https://example.com/long-url" required>
+
+            <button type="submit">Generate Short URL</button>
+        </form>
+
+        <% if (locals.errorMsg) { %>
+            <p style="margin-top:12px;color:#fca5a5;">
+                <%= errorMsg %>
+            </p>
+            <% } %>
+
+                <% if(locals.shortenerId) { %>
+                    <div class="short-url-box">
+                        <label>Shortened URL:</label>
+                        <input type="text" value="<%= baseUrl %>/url/<%= shortenerId %>" id="shortURL" readonly>
+
+                        <input type="button" value="COPY URL"
+                            onclick="navigator.clipboard.writeText(document.getElementById('shortURL').value); this.value='COPIED';">
+                    </div>
+                    <% } %>
+
+                        <% if (locals.allDocs) { %>
+                            <div class="table-wrapper">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th colspan="5">Record of All URLs</th>
+                                        </tr>
+                                        <tr>
+                                            <th>S.No</th>
+                                            <th>Long URL</th>
+                                            <th>Short ID</th>
+                                            <th>Shortened URL</th>
+                                            <th>Clicks</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        <% allDocs.filter((item)=> item.redirectURL && item.redirectURL.trim() &&
+                                            item.shortenerId && item.shortenerId.trim()).forEach((item, index) => { %>
+                                            <tr>
+                                                <td>
+                                                    <%= index+1 %>
+                                                </td>
+                                                <td>
+                                                    <%= item.redirectURL %>
+                                                </td>
+                                                <td>
+                                                    <%= item.shortenerId %>
+                                                </td>
+
+                                                <td>
+                                                    <a href="<%= baseUrl %>/url/<%= item.shortenerId %>"
+                                                        target="_blank">
+
+                                                        <%= baseUrl %>/url/<%= item.shortenerId %>
+                                                    </a>
+                                                </td>
+
+                                                <td>
+                                                    <%= item.clicks ?? item.visitHistory.length %>
+                                                </td>
+                                            </tr>
+                                            <% }) %>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <% } %>
+
+    </div>
+
+</body>
+
+</html>
