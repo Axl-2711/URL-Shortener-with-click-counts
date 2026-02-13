@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Analytics</title>
+    <link rel="stylesheet" href="/styles/analytics.css">
+</head>
+<body>
+    <div class="container">
+        <div class="top-bar">
+            <span>Logged in as <span class="guest-user"><%= loggedInUserName %></span></span>
+            <a class="back-btn" href="/">Back to Home</a>
+        </div>
+
+        <h1>Link Analytics</h1>
+
+        <div class="card-grid">
+            <div class="card"><span>Short URL</span><strong><%= baseUrl %>/url/<%= urlDoc.shortenerId %></strong></div>
+            <div class="card"><span>Total Clicks</span><strong><%= urlDoc.clicks ?? urlDoc.visitHistory.length %></strong></div>
+            <div class="card"><span>Created At</span><strong><%= new Date(urlDoc.createdAt).toLocaleString() %></strong></div>
+            <div class="card"><span>Expires At</span><strong><%= urlDoc.expiresAt ? new Date(urlDoc.expiresAt).toLocaleString() : "Never" %></strong></div>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr><th>#</th><th>Visit Timestamp</th></tr>
+                </thead>
+                <tbody>
+                    <% if ((urlDoc.visitHistory || []).length === 0) { %>
+                        <tr><td colspan="2">No visits yet.</td></tr>
+                    <% } %>
+                    <% (urlDoc.visitHistory || []).forEach((v, i) => { %>
+                        <tr>
+                            <td><%= i + 1 %></td>
+                            <td><%= new Date(v.timestamp).toLocaleString() %></td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

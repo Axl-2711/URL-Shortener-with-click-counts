@@ -25,6 +25,8 @@
         <form method="POST" action="/url">
             <label for="url">Enter Your Long URL:</label>
             <input type="url" name="url" id="url" placeholder="https://example.com/long-url" required>
+            <label for="expiresAt">Expiry (optional):</label>
+            <input type="datetime-local" name="expiresAt" id="expiresAt">
 
             <button type="submit">Generate Short URL</button>
         </form>
@@ -50,7 +52,7 @@
                                 <table>
                                     <thead>
                                         <tr>
-                                            <th colspan="5">Record of All URLs</th>
+                                            <th colspan="8">Record of All URLs</th>
                                         </tr>
                                         <tr>
                                             <th>S.No</th>
@@ -58,6 +60,9 @@
                                             <th>Short ID</th>
                                             <th>Shortened URL</th>
                                             <th>Clicks</th>
+                                            <th>Created</th>
+                                            <th>Expiry</th>
+                                            <th>Actions</th>
                                         </tr>
                                     </thead>
 
@@ -85,6 +90,18 @@
 
                                                 <td>
                                                     <%= item.clicks ?? item.visitHistory.length %>
+                                                </td>
+                                                <td>
+                                                    <%= new Date(item.createdAt).toLocaleString() %>
+                                                </td>
+                                                <td>
+                                                    <%= item.expiresAt ? new Date(item.expiresAt).toLocaleString() : "Never" %>
+                                                </td>
+                                                <td class="actions-cell">
+                                                    <a href="/url/analytics/<%= item.shortenerId %>" class="btn-mini">Analytics</a>
+                                                    <form method="POST" action="/url/delete/<%= item.shortenerId %>" style="display:inline;">
+                                                        <button type="submit" class="btn-mini btn-delete">Delete</button>
+                                                    </form>
                                                 </td>
                                             </tr>
                                             <% }) %>

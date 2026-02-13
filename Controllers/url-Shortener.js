@@ -18,11 +18,14 @@ const handleGenerateShortenerID = async (req, res) => {
         const rawUrl = req.body?.url ?? "";
         const normalizedUrl = rawUrl.trim();
         const loggedInUserName = req.verifiedJWTUserId?.name || req.verifiedJWTUserId?.email || "User";
+        const loggedInUserId = req.verifiedJWTUserId?.id;
+        const rawExpiry = req.body?.expiresAt ?? "";
 
         //Adding this function to get current protocol and host -
         const baseUrl = req.protocol + "://" + req.get("host");
 
         const allDocs = await urlModel.find({
+            createdBy: loggedInUserId,
             shortenerId: { $exists: true, $ne: "" },
             redirectURL: { $exists: true, $ne: "" },
         }).sort({ createdAt: -1 });
@@ -47,7 +50,7 @@ const handleGenerateShortenerID = async (req, res) => {
             });
         }
 
-        const existingDoc = await urlModel.findOne({ redirectURL: normalizedUrl });
+        const existingDoc = await urlModel.findOne({ redirectURL: normalizedUrl, createdBy: loggedInUserId });
         if (existingDoc) {
             return res.render("home.ejs", {
                 shortenerId: existingDoc.shortenerId,
@@ -57,16 +60,40 @@ const handleGenerateShortenerID = async (req, res) => {
             });
         }
 
+        let expiresAt = null;
+        if (rawExpiry) {
+            const parsedExpiry = new Date(rawExpiry);
+            if (Number.isNaN(parsedExpiry.getTime())) {
+                return res.status(400).render("home.ejs", {
+                    errorMsg: "Invalid expiry date/time.",
+                    allDocs,
+                    baseUrl,
+                    loggedInUserName,
+                });
+            }
+            if (parsedExpiry <= new Date()) {
+                return res.status(400).render("home.ejs", {
+                    errorMsg: "Expiry must be in the future.",
+                    allDocs,
+                    baseUrl,
+                    loggedInUserName,
+                });
+            }
+            expiresAt = parsedExpiry;
+        }
+
         const id = randomUUID();
     
         await urlModel.create({
             shortenerId : id,
             redirectURL : normalizedUrl,
-            // visitHistory : 
+            createdBy: loggedInUserId,
+            expiresAt,
     
         })
     
         const latestDocs = await urlModel.find({
+            createdBy: loggedInUserId,
             shortenerId: { $exists: true, $ne: "" },
             redirectURL: { $exists: true, $ne: "" },
         }).sort({ createdAt: -1 });
@@ -91,17 +118,24 @@ const handleGenerateShortenerID = async (req, res) => {
 const reDirectToURL = async (req, res) => {
 
     const shortId = req.params.shortID;
-    const entry = await urlModel.findOneAndUpdate( {
-        shortenerId : shortId} , {
-        
-        $inc: { clicks: 1 },
-        
-        $push : { visitHistory : {
-            timestamp : Date.now()
-        }  }   
+    const existing = await urlModel.findOne({ shortenerId: shortId });
 
+    if (!existing) {
+        return res.status(404).send("Short URL not found");
+    }
 
-    }, { new: true } )
+    if (existing.expiresAt && existing.expiresAt <= new Date()) {
+        return res.status(410).send("This short URL has expired");
+    }
+
+    const entry = await urlModel.findOneAndUpdate(
+        { shortenerId: shortId },
+        {
+            $inc: { clicks: 1 },
+            $push: { visitHistory: { timestamp: new Date() } }
+        },
+        { new: true }
+    )
 
     if (!entry) {
         return res.status(404).send("Short URL not found");
@@ -117,13 +151,37 @@ const reDirectToURL = async (req, res) => {
 const handleGetAnalytics = async (req, res) => {
 
     const shortID = req.params.shortID;
-    const result = await urlModel.findOne({shortenerId  : shortID});//retuns that single object which matched the shortID.
-        res.json({
-            totalClicks : result.clicks ?? result.visitHistory.length,
-            analytics : result.visitHistory
-        })
+    const baseUrl = req.protocol + "://" + req.get("host");
+    const loggedInUserName = req.verifiedJWTUserId?.name || req.verifiedJWTUserId?.email || "User";
+    const loggedInUserId = req.verifiedJWTUserId?.id;
+    const result = await urlModel.findOne({ shortenerId: shortID, createdBy: loggedInUserId });
+    if (!result) {
+        return res.status(404).render("home.ejs", {
+            errorMsg: "Short URL not found.",
+            allDocs: [],
+            baseUrl,
+            loggedInUserName,
+        });
+    }
+    return res.render("analytics.ejs", {
+        urlDoc: result,
+        baseUrl,
+        loggedInUserName,
+    });
     
 }
 
+const handleDeleteShortUrl = async (req, res) => {
+    try {
+        const shortID = req.params.shortID;
+        const loggedInUserId = req.verifiedJWTUserId?.id;
+        await urlModel.findOneAndDelete({ shortenerId: shortID, createdBy: loggedInUserId });
+        return res.redirect("/");
+    } catch (err) {
+        console.log("Delete error:", err);
+        return res.redirect("/");
+    }
+}
 
-export { handleGenerateShortenerID, reDirectToURL, handleGetAnalytics };
+
+export { handleGenerateShortenerID, reDirectToURL, handleGetAnalytics, handleDeleteShortUrl };

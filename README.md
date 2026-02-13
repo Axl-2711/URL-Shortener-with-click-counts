@@ -5,11 +5,6 @@ Includes **Signup/Login**, **JWT authentication**, **bcrypt password hashing**, 
 
 ---
 
-## 🔗 Live Demo
-👉 **Deployed Link:**   
-
----
-
 ## 📘 Project Overview
 
 This project allows users to generate short URLs after logging in.  
@@ -20,7 +15,7 @@ Built using **Node.js + Express**, UI in **EJS**, and database with **MongoDB At
 - 🔒 Protected routes with authentication  
 - 🔑 Password hashing using bcrypt  
 - ✂ URL shortening with unique IDs  
-- 📝 EJS template UI (home, login, signup)  
+- 📝 EJS template UI (home, login, signup, analytics)  
 - 📦 MongoDB Atlas + Mongoose  
 - 🌐 Works locally & after deployment
 
@@ -42,8 +37,8 @@ Built using **Node.js + Express**, UI in **EJS**, and database with **MongoDB At
 - User enters a long URL  
 - Backend generates unique ID  
 - Saves `{ originalUrl, shortUrl, userId }` in database  
-- Shows short link: http://localhost:5000/url/abc123
-- After deployment: https://bitly.up.railway.app/url/abc123
+- Shows short link: http://localhost:5000/url/abc123 (example)
+- After deployment: https://bitly.up.railway.app/url/abc123 (example)
   
 ### 4. Redirect Logic
 - Visiting the short URL redirects to original link  
@@ -63,7 +58,8 @@ Built using **Node.js + Express**, UI in **EJS**, and database with **MongoDB At
 - JWT Authentication  
 - bcrypt  
 - Cookie-parser 
-- short-unique-id
+- uuid
+- express-rate-limiter
 
 ### Database
 - MongoDB Atlas  
@@ -83,9 +79,11 @@ Built using **Node.js + Express**, UI in **EJS**, and database with **MongoDB At
   ├── styles/
     ├── home.css
 │   ├── login.css
+    ├── analytics.css
 │   └── signup.css
 │ ├── home.ejs
 │ ├── login.ejs
+  ├── analytics.ejs
 │ └── signup.ejs
 ├── connect.js
 ├── index.js

@@ -28,7 +28,9 @@ staticRouter.get("/login", checkAuthAtStaticLoginAndSignup, async (req, res) => 
 staticRouter.get("/", restrictToLoggedinUserOnly, async (req, res)=> {
 
     const baseUrl = req.protocol + "://" + req.get("host");
+    const loggedInUserId = req.verifiedJWTUserId?.id;
     const allDocs = await urlModel.find({
+      createdBy: loggedInUserId,
       shortenerId: { $exists: true, $ne: "" },
       redirectURL: { $exists: true, $ne: "" },
     }).sort({ createdAt: -1 });

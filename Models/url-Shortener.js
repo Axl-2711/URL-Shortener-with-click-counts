@@ -15,12 +15,23 @@ const urlSchema = new mongoose.Schema({
         required: true,
     },
 
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "users",
+        required: false,
+    },
+
+    expiresAt: {
+        type: Date,
+        default: null,
+    },
+
     clicks: {
         type: Number,
         default: 0,
     },
 
-    visitHistory: [{ timestamp: { type: String } }] //Array of Objects
+    visitHistory: [{ timestamp: { type: Date, default: Date.now } }] //Array of Objects
 
 
 }, { timestamps: true });
