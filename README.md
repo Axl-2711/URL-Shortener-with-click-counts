@@ -5,11 +5,6 @@ Includes **Signup/Login**, **JWT authentication**, **bcrypt password hashing**, 
 
 ---
 
-## 🔗 Live Demo
-👉 **Deployed Link:**   
-
----
-
 ## 📘 Project Overview
 
 This project allows users to generate short URLs after logging in.  
