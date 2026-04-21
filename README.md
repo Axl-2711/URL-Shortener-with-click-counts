@@ -100,7 +100,7 @@ Built using **Node.js + Express**, UI in **EJS**, and database with **MongoDB At
 ### 1. Clone Repo
 ```
 
-git clone https://github.com/Axl-2711/URL-Shortener-Project.git
+git clone https://github.com/Axl-2711/URL-Shortener-with-click-counts.git
 
 ```
 
